@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef } from "react";
-import { pick, reduce } from "lodash";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { reduce } from "lodash";
 import {
   useTable,
   usePagination,
@@ -155,6 +155,7 @@ export type HeaderComponentProps = {
   widgetId: string;
 };
 
+const emptyArr: any = [];
 export function Table(props: TableProps) {
   const isResizingColumn = React.useRef(false);
   const handleResizeColumn = (columnWidths: Record<string, number>) => {
@@ -173,17 +174,15 @@ export function Table(props: TableProps) {
     }
     props.handleResizeColumn(columnWidthMap);
   };
-  const data = React.useMemo(() => props.data, [JSON.stringify(props.data)]);
-  const columnString = JSON.stringify(
-    pick(props, ["columns", "compactMode", "columnWidthMap"]),
-  );
-  const columns = React.useMemo(() => props.columns, [columnString]);
+  const data = props.data;
+
+  const columns = props.columns;
   const tableHeadercolumns = React.useMemo(
     () =>
       props.columns.filter((column: ReactTableColumnProps) => {
         return column.alias !== "actions";
       }),
-    [columnString],
+    [columns],
   );
   /*
     For serverSidePaginationEnabled we are taking props.data.length as the page size.
@@ -231,6 +230,7 @@ export function Table(props: TableProps) {
   } else {
     // We are updating column size since the drag is complete when we are changing value of isResizing from true to false
     if (isResizingColumn.current) {
+      //clear timeout logic
       //update isResizingColumn in next event loop so that dragEnd event does not trigger click event.
       setTimeout(function() {
         isResizingColumn.current = false;
@@ -244,8 +244,12 @@ export function Table(props: TableProps) {
     startIndex = 0;
     endIndex = props.data.length;
   }
-  const subPage = page.slice(startIndex, endIndex);
-  const selectedRowIndices = props.selectedRowIndices || [];
+  const subPage = useMemo(() => page.slice(startIndex, endIndex), [
+    page,
+    startIndex,
+    endIndex,
+  ]);
+  const selectedRowIndices = props.selectedRowIndices || emptyArr;
   const tableSizes = TABLE_SIZES[props.compactMode || CompactModeTypes.DEFAULT];
   const tableWrapperRef = useRef<HTMLDivElement | null>(null);
   const scrollBarRef = useRef<SimpleBar | null>(null);
@@ -264,15 +268,16 @@ export function Table(props: TableProps) {
       selectedRowCount === 0 ? 0 : selectedRowCount === page.length ? 1 : 2;
     return result;
   }, [selectedRowIndices, page]);
-  const handleAllRowSelectClick = (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-  ) => {
-    // if all / some rows are selected we remove selection on click
-    // else select all rows
-    props.toggleAllRowSelect(!Boolean(rowSelectionState), page);
-    // loop over subPage rows and toggleRowSelected if required
-    e.stopPropagation();
-  };
+  const handleAllRowSelectClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      // if all / some rows are selected we remove selection on click
+      // else select all rows
+      props.toggleAllRowSelect(!Boolean(rowSelectionState), page);
+      // loop over subPage rows and toggleRowSelected if required
+      e.stopPropagation();
+    },
+    [page, props.toggleAllRowSelect],
+  );
   const isHeaderVisible =
     props.isVisibleSearch ||
     props.isVisibleFilters ||
@@ -291,11 +296,14 @@ export function Table(props: TableProps) {
     };
   }, [isHeaderVisible, props.height, tableSizes.TABLE_HEADER_HEIGHT]);
 
-  const shouldUseVirtual =
-    props.serverSidePaginationEnabled &&
-    !props.columns.some(
-      (column) => !!column.columnProperties.allowCellWrapping,
-    );
+  const shouldUseVirtual = useMemo(
+    () =>
+      props.serverSidePaginationEnabled &&
+      !props.columns.some(
+        (column) => !!column.columnProperties.allowCellWrapping,
+      ),
+    [props.serverSidePaginationEnabled, props.columns],
+  );
 
   useEffect(() => {
     if (props.isAddRowInProgress) {
