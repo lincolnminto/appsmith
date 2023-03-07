@@ -133,7 +133,7 @@ function TableFilterPaneContent(props: TableFilterProps) {
     if (updatedFiltersState !== filters) {
       updateFilters(updatedFiltersState);
     }
-  }, [props.filters]);
+  }, [filters, props.filters]);
 
   const addFilter = () => {
     const updatedFilters = filters ? [...filters] : [];
@@ -160,7 +160,7 @@ function TableFilterPaneContent(props: TableFilterProps) {
 
   const clearFilters = useCallback(() => {
     props.applyFilter(defaultFilters);
-  }, []);
+  }, [props]);
 
   const columns: DropdownOption[] = props.columns
     .map((column: ReactTableColumnProps) => {

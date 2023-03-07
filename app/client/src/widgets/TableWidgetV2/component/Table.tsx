@@ -174,12 +174,11 @@ export function Table(props: TableProps) {
     }
     props.handleResizeColumn(columnWidthMap);
   };
-  const data = props.data;
+  const { columns, data, multiRowSelection, toggleAllRowSelect } = props;
 
-  const columns = props.columns;
   const tableHeadercolumns = React.useMemo(
     () =>
-      props.columns.filter((column: ReactTableColumnProps) => {
+      columns.filter((column: ReactTableColumnProps) => {
         return column.alias !== "actions";
       }),
     [columns],
@@ -256,7 +255,7 @@ export function Table(props: TableProps) {
   const tableHeaderWrapperRef = React.createRef<HTMLDivElement>();
   const rowSelectionState = React.useMemo(() => {
     // return : 0; no row selected | 1; all row selected | 2: some rows selected
-    if (!props.multiRowSelection) return null;
+    if (!multiRowSelection) return null;
     const selectedRowCount = reduce(
       page,
       (count, row) => {
@@ -267,16 +266,16 @@ export function Table(props: TableProps) {
     const result =
       selectedRowCount === 0 ? 0 : selectedRowCount === page.length ? 1 : 2;
     return result;
-  }, [selectedRowIndices, page]);
+  }, [multiRowSelection, page, selectedRowIndices]);
   const handleAllRowSelectClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       // if all / some rows are selected we remove selection on click
       // else select all rows
-      props.toggleAllRowSelect(!Boolean(rowSelectionState), page);
+      toggleAllRowSelect(!Boolean(rowSelectionState), page);
       // loop over subPage rows and toggleRowSelected if required
       e.stopPropagation();
     },
-    [page, props.toggleAllRowSelect, rowSelectionState, page],
+    [page, rowSelectionState, toggleAllRowSelect],
   );
   const isHeaderVisible =
     props.isVisibleSearch ||
