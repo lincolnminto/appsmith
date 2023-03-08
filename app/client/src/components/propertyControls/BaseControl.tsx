@@ -11,20 +11,31 @@ import { AdditionalDynamicDataTree } from "utils/autocomplete/customTreeTypeDefC
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 class BaseControl<P extends ControlProps, S = {}> extends Component<P, S> {
+  shoudUpdateProperty(propertyValue: any) {
+    if (
+      this.props.propertyValue === undefined &&
+      propertyValue === this.props.defaultValue
+    ) {
+      return false;
+    }
+    if (
+      !(
+        !_.isNil(this.props.onPropertyChange) &&
+        this.props.propertyValue !== propertyValue
+      )
+    ) {
+      return false;
+    }
+    return true;
+  }
   updateProperty(
     propertyName: string,
     propertyValue: any,
     isUpdatedViaKeyboard?: boolean,
   ) {
     if (
-      this.props.propertyValue === undefined &&
-      propertyValue === this.props.defaultValue
-    ) {
-      return;
-    }
-    if (
-      !_.isNil(this.props.onPropertyChange) &&
-      this.props.propertyValue !== propertyValue
+      this.shoudUpdateProperty(propertyValue) &&
+      this.props.onPropertyChange
     ) {
       this.props.onPropertyChange(
         propertyName,
@@ -38,6 +49,17 @@ class BaseControl<P extends ControlProps, S = {}> extends Component<P, S> {
       this.props.deleteProperties(propertyPaths);
     }
   }
+  batchUpdatePropertiesWithAssociatedUpdates = (
+    updates: { propertyName: string; propertyValue: any }[],
+  ) => {
+    if (this.props.onBatchUpdateWithAssociatedUpdates) {
+      this.props.onBatchUpdateWithAssociatedUpdates(
+        updates.filter(({ propertyValue }) =>
+          this.shoudUpdateProperty(propertyValue),
+        ),
+      );
+    }
+  };
   batchUpdateProperties = (updates: Record<string, unknown>) => {
     if (this.props.onBatchUpdateProperties) {
       this.props.onBatchUpdateProperties(updates);
@@ -87,6 +109,14 @@ export interface ControlFunctions {
   onPropertyChange?: (
     propertyName: string,
     propertyValue: string,
+    isUpdatedViaKeyboard?: boolean,
+  ) => void;
+
+  onBatchUpdateWithAssociatedUpdates: (
+    updates: {
+      propertyName: string;
+      propertyValue: string;
+    }[],
     isUpdatedViaKeyboard?: boolean,
   ) => void;
   onBatchUpdateProperties?: (updates: Record<string, unknown>) => void;
