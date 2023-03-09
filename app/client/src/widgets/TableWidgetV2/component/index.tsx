@@ -161,22 +161,25 @@ function ReactTableComponent(props: ReactTableComponentProps) {
     width,
   } = props;
 
-  const sortTableColumn = (columnIndex: number, asc: boolean) => {
-    if (allowSorting) {
-      if (columnIndex === -1) {
-        _sortTableColumn("", asc);
-      } else {
-        const column = columns[columnIndex];
-        const columnType = column.metaProperties?.type || ColumnTypes.TEXT;
-        if (
-          columnType !== ColumnTypes.IMAGE &&
-          columnType !== ColumnTypes.VIDEO
-        ) {
-          _sortTableColumn(column.alias, asc);
+  const sortTableColumn = useCallback(
+    (columnIndex: number, asc: boolean) => {
+      if (allowSorting) {
+        if (columnIndex === -1) {
+          _sortTableColumn("", asc);
+        } else {
+          const column = columns[columnIndex];
+          const columnType = column.metaProperties?.type || ColumnTypes.TEXT;
+          if (
+            columnType !== ColumnTypes.IMAGE &&
+            columnType !== ColumnTypes.VIDEO
+          ) {
+            _sortTableColumn(column.alias, asc);
+          }
         }
       }
-    }
-  };
+    },
+    [_sortTableColumn, allowSorting, columns],
+  );
 
   const selectTableRow = useCallback(
     (row: { original: Record<string, unknown>; index: number }) => {

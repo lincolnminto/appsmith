@@ -141,5 +141,5 @@ const TableColumnHeader = (props: TableColumnHeaderProps) => {
     </div>
   );
 };
-
-export default TableColumnHeader;
+const MemoisedTableColumnHeader = React.memo(TableColumnHeader);
+export default MemoisedTableColumnHeader;
