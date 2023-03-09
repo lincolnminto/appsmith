@@ -2271,7 +2271,7 @@ class TableWidgetV2 extends BaseWidget<TableWidgetProps, WidgetState> {
             textSize={cellProperties.textSize}
             timePrecision={cellProperties.timePrecision || TimePrecision.NONE}
             toggleCellEditMode={this.toggleCellEditMode}
-            updateNewRowValues={this.getUpdateNewRowValuesActions}
+            updateNewRowValues={this.updateNewRowValues}
             validationErrorMessage="This field is required"
             value={props.cell.value}
             verticalAlignment={cellProperties.verticalAlignment}
@@ -2512,9 +2512,7 @@ class TableWidgetV2 extends BaseWidget<TableWidgetProps, WidgetState> {
     action?: string,
   ) => {
     if (this.props.isAddRowInProgress) {
-      this.props.updateBatchUpdateWidgetMetaProperties(
-        this.getUpdateNewRowValuesActions(column, value, value),
-      );
+      this.updateNewRowValues(column, value, value);
     } else {
       const {
         batchedActions,
@@ -2583,9 +2581,7 @@ class TableWidgetV2 extends BaseWidget<TableWidgetProps, WidgetState> {
     rowIndex: number,
   ) => {
     if (this.props.isAddRowInProgress) {
-      this.props.updateBatchUpdateWidgetMetaProperties(
-        this.getUpdateNewRowValuesActions(alias, value, value),
-      );
+      this.updateNewRowValues(alias, value, value);
     } else {
       this.props.updateBatchUpdateWidgetMetaProperties(
         this.getUpdateTransientTableDataActions({
@@ -2707,6 +2703,18 @@ class TableWidgetV2 extends BaseWidget<TableWidgetProps, WidgetState> {
       [alias]: parsedValue,
     });
     return batchedActions;
+  };
+  updateNewRowValues = (
+    alias: string,
+    value: unknown,
+    parsedValue: unknown,
+  ) => {
+    const updates = this.getUpdateNewRowValuesActions(
+      alias,
+      value,
+      parsedValue,
+    );
+    this.props.updateBatchUpdateWidgetMetaProperties(updates);
   };
 }
 
