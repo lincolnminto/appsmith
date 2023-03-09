@@ -112,7 +112,7 @@ export interface ControlFunctions {
     isUpdatedViaKeyboard?: boolean,
   ) => void;
 
-  onBatchUpdateWithAssociatedUpdates: (
+  onBatchUpdateWithAssociatedUpdates?: (
     updates: {
       propertyName: string;
       propertyValue: string;
