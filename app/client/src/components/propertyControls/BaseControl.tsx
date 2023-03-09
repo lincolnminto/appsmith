@@ -3,7 +3,6 @@
  * Controls are higher order components that update a widgets property
  */
 import { Component } from "react";
-import _ from "lodash";
 import { EditorTheme } from "components/editorComponents/CodeEditor/EditorConfig";
 import { PropertyPaneControlConfig } from "constants/PropertyControlConstants";
 import { CodeEditorExpected } from "components/editorComponents/CodeEditor";
@@ -11,23 +10,17 @@ import { AdditionalDynamicDataTree } from "utils/autocomplete/customTreeTypeDefC
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 class BaseControl<P extends ControlProps, S = {}> extends Component<P, S> {
-  shoudUpdateProperty(propertyValue: any) {
+  shoudUpdateProperty(propertyValue: unknown) {
     if (
-      this.props.propertyValue === undefined &&
-      propertyValue === this.props.defaultValue
-    ) {
-      return false;
-    }
-    if (
-      !(
-        !_.isNil(this.props.onPropertyChange) &&
-        this.props.propertyValue !== propertyValue
-      )
+      (this.props.propertyValue === undefined &&
+        propertyValue === this.props.defaultValue) ||
+      !(this.props.propertyValue !== propertyValue)
     ) {
       return false;
     }
     return true;
   }
+
   updateProperty(
     propertyName: string,
     propertyValue: any,
@@ -44,11 +37,13 @@ class BaseControl<P extends ControlProps, S = {}> extends Component<P, S> {
       );
     }
   }
+
   deleteProperties(propertyPaths: string[]) {
     if (this.props.deleteProperties) {
       this.props.deleteProperties(propertyPaths);
     }
   }
+
   batchUpdatePropertiesWithAssociatedUpdates = (
     updates: { propertyName: string; propertyValue: any }[],
   ) => {
@@ -60,6 +55,7 @@ class BaseControl<P extends ControlProps, S = {}> extends Component<P, S> {
       );
     }
   };
+
   batchUpdateProperties = (updates: Record<string, unknown>) => {
     if (this.props.onBatchUpdateProperties) {
       this.props.onBatchUpdateProperties(updates);

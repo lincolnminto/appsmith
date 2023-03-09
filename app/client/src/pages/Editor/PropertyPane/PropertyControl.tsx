@@ -237,7 +237,12 @@ const PropertyControl = memo((props: Props) => {
     },
     [dispatch],
   );
-
+  const {
+    isTriggerProperty,
+    postUpdateAction,
+    updateHook,
+    updateRelatedWidgetProperties,
+  } = props;
   const getWidgetsOwnUpdatesOnPropertyChange = useCallback(
     (
       propertyName: string,
@@ -245,8 +250,8 @@ const PropertyControl = memo((props: Props) => {
     ): UpdateWidgetPropertyPayload | undefined => {
       let propertiesToUpdate: Array<PropertyHookUpdates> | undefined;
       // To support updating multiple properties of same widget.
-      if (props.updateHook) {
-        propertiesToUpdate = props.updateHook(
+      if (updateHook) {
+        propertiesToUpdate = updateHook(
           widgetProperties,
           propertyName,
           propertyValue,
@@ -305,7 +310,7 @@ const PropertyControl = memo((props: Props) => {
           updates: {
             modify: allUpdates,
             remove: allDeletions,
-            postUpdateAction: props.postUpdateAction,
+            postUpdateAction: postUpdateAction,
           },
           dynamicUpdates: {
             dynamicPropertyPathList: allDynamicPropertyPathUpdate,
@@ -334,12 +339,12 @@ const PropertyControl = memo((props: Props) => {
           widgetId: widgetProperties.widgetId,
           updates: {
             modify,
-            postUpdateAction: props.postUpdateAction,
+            postUpdateAction: postUpdateAction,
           },
         };
       }
     },
-    [props, widgetProperties],
+    [postUpdateAction, updateHook, widgetProperties],
   );
 
   const getOtherWidgetPropertyChanges = useCallback(
@@ -357,7 +362,7 @@ const PropertyControl = memo((props: Props) => {
           widgetProperties.widgetName,
           propertyName,
           propertyValue,
-          props.isTriggerProperty,
+          isTriggerProperty,
         );
 
         if (
@@ -383,8 +388,8 @@ const PropertyControl = memo((props: Props) => {
           otherWidgetPropertiesToUpdates.push(parentEnhancementUpdates);
         }
       }
-      if (props.updateRelatedWidgetProperties) {
-        const relatedWidgetUpdates = props.updateRelatedWidgetProperties(
+      if (updateRelatedWidgetProperties) {
+        const relatedWidgetUpdates = updateRelatedWidgetProperties(
           propertyName,
           propertyValue,
           widgetProperties,
@@ -402,17 +407,12 @@ const PropertyControl = memo((props: Props) => {
     },
     [
       childWidgetPropertyUpdateEnhancementFn,
+      isTriggerProperty,
       parentIdWithEnhancementFn,
-      props,
+      updateRelatedWidgetProperties,
       widgetProperties,
     ],
   );
-
-  /**
-   * this function is called whenever we change any property in the property pane
-   * it updates the widget property by updateWidgetPropertyRequest
-   * It also calls the beforeChildPropertyUpdate hook
-   */
 
   const getPropertyUpdatesWithAssociatedWidgetUpdates = useCallback(
     (
@@ -497,6 +497,12 @@ const PropertyControl = memo((props: Props) => {
       widgetProperties.widgetName,
     ],
   );
+
+  /**
+   * this function is called whenever we change any property in the property pane
+   * it updates the widget property by updateWidgetPropertyRequest
+   * It also calls the beforeChildPropertyUpdate hook
+   */
   const onPropertyChange = useCallback(
     (
       propertyName: string,
