@@ -133,7 +133,7 @@ function TableFilterPaneContent(props: TableFilterProps) {
     if (updatedFiltersState !== filters) {
       updateFilters(updatedFiltersState);
     }
-  }, [filters, props.filters]);
+  }, [props.filters]);
 
   const addFilter = () => {
     const updatedFilters = filters ? [...filters] : [];
